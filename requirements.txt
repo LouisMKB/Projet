@@ -7,3 +7,7 @@ seaborn
 loguru
 requests
 plotly
+fastapi
+psycopg2-binary
+sqlalchemy
+uvicorn
