@@ -9,8 +9,11 @@ wheels/
 
 
 
+
 # Virtual environments
 .venv
 
 # data
-data/
+# Ignore tout le dossier data sauf le fichier jupt.ipynb
+data/*
+!data/jupt.ipynb
