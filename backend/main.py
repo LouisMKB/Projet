@@ -7,17 +7,10 @@ from collections import Counter
 
 app = FastAPI()
 
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
-
 @app.get("/")
 def root_api():
     return {"message": "API de recommandation de films"}
-# db: Session = Depends(get_db)
+
 # Route pour récupérer tous les films
 @app.get("/films")
 def get_films():
