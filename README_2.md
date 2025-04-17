@@ -29,3 +29,12 @@ Afin de lancer la collecte de donné:
 -une fois les données charger aller dans backend/app/utils/database_loading et lancer le script, ca va créer la base de donnéed data 
 
 - un fichier jupt.ipynb est présent dans le dossier data pour s'approprier la base de donnée et faire quelques requete dessus, si besoin.(il y a une instruction pour supprimer les films dans la table  avec release_date vide, normalementc'est pas censé arrivé vue la construction de la table avec sqlalchemy, mais j'ai eu quelques problèmes avec ça dans la requete avec fastapi, donc si vous avez ce problème aller voir s'il y a des film avec release_date null)
+
+
+
+L'Api pour la partie backend se trouve dans backend/main.py
+
+Pour accéder à l'api et tester les endpoint faire :
+` uvicorn backend.main:app --port 8000 `
+
+Ensuite une fois le serveur fastapi lancé rajouter /docs dans l'url  aprés   127.0.0.1:8000  pour tester les endpoints
