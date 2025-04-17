@@ -1,0 +1,6 @@
+streamlit
+duckdb
+requests
+pandas
+matplotlib
+seaborn
