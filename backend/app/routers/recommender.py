@@ -4,8 +4,9 @@ from app.models.schemas import (
     UserDetailsResponse, MovieDetailsResponse, TopRatedMoviesResponse,
     MovieSearchResponse, PopularMoviesResponse
 )
-from app.services.recommendation_service import train_model, get_recommendations, load_data
-from app.utils.data_loader import load_movie_metadata
+
+from app.service.recommendation_service import train_model, get_recommendations, load_data
+from app.utils.data_from_api import load_movie_metadata
 import pandas as pd
 
 router = APIRouter()

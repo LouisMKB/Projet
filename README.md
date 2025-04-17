@@ -4,7 +4,7 @@
 
 #### **1. CONTEXTE DU PROJET**
 
-En tant que plateforme de streaming de contenus audiovisuels, nous souhaitons développer une solution de **recommandation de films** qui repose sur des données réelles et utilise une approche de filtrage collaboratif. L'objectif est d'offrir une expérience utilisateur personnalisée en proposant une liste de films adaptés à leurs goûts et préférences, tout en permettant une analyse approfondie des données collectées.
+En tant que plateforme de streaming de contenus audiovisuels, nous souhaitons développer une solution de **recommandation de films** qui repose sur des données réelles et utilise une approche de filtrage collaboratif. L'objectif est d'offrir une expérience utilisateur personnalisée en proposant une liste de films adaptés à leurs goûts et préférences, tout en permettant une analyse approfondie des données ENcollectées.
 
 ---
 

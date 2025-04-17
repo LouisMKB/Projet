@@ -1,0 +1,26 @@
+[project]
+name = "projet"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cython>=3.0.12",
+    "dotenv>=0.9.9",
+    "duckdb>=1.2.2",
+    "duckdb-engine>=0.17.0",
+    "fastapi>=0.115.12",
+    "loguru>=0.7.3",
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.4",
+    "pandas>=2.2.3",
+    "plotly>=6.0.1",
+    "psycopg2-binary>=2.9.10",
+    "requests>=2.32.3",
+    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
+    "sqlalchemy>=2.0.40",
+    "streamlit>=1.44.1",
+    "uvicorn>=0.34.1",
+    "wheel>=0.45.1",
+]

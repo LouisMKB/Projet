@@ -10,5 +10,8 @@ plotly
 fastapi
 psycopg2-binary
 sqlalchemy
+duckdb
+duckdb-engine
 uvicorn
-scikit-surprise=
+Cython
+wheel
