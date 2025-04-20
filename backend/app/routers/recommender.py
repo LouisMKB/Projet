@@ -1,70 +1,143 @@
-from fastapi import APIRouter, HTTPException
-from app.models.schemas import (
-    TrainResponse, RecommendResponse, DatasetInfoResponse,
-    UserDetailsResponse, MovieDetailsResponse, TopRatedMoviesResponse,
-    MovieSearchResponse, PopularMoviesResponse
-)
-
-from app.service.recommendation_service import train_model, get_recommendations, load_data
-from app.utils.data_from_api import load_movie_metadata
-import pandas as pd
-
+from fastapi import APIRouter, HTTPException,Depends
+from collections import Counter
+from backend.app.service.recommendation_service import recommend_movies
+from backend.app.models.schemas import( Film,FilmListResponse,RecommendRequest,Recommendation,
+RecommendResponse,TopFilm,ListTopFilm,StatisticsResponse,GenreStatistics,DistributionGenresResponse,GenreDistribution)
+import duckdb
+from backend.app.utils.count_gender import count_gender
 router = APIRouter()
 
-@router.post("/train", response_model=TrainResponse)
-def train():
+
+def get_db_connection():
+    con = duckdb.connect("data/films_reco.db")
+    try:
+        yield con
+    finally:
+        con.close()
+        
+@router.post("/recommendation_movies/{user_id}", response_model=RecommendResponse)
+def get_recommendations(requete:RecommendRequest):
     """
-    Entraîner le modèle de recommandation
+    Endpoint pour obtenir des recommandations de films pour un utilisateur spécifié
+    - user_id: Identifiant de l'utilisateur
+    - nombre_de_recommandation: Nombre de recommandations à retourner
     """
-    return train_model()
+    return recommend_movies(requete.user_id, requete.num_recommendations)
+    
 
-@router.get("/recommend/{user_id}", response_model=RecommendResponse)
-def recommend(user_id: int, num_recommendations: int = 5):
-    recommendations = get_recommendations(user_id, num_recommendations)
-    return {"user_id": user_id, "recommendations": recommendations}
 
-@router.get("/dataset/info", response_model=DatasetInfoResponse)
-def dataset_info():
-    dataset = load_data()
-    df = pd.DataFrame(dataset.raw_ratings, columns=['user_id', 'item_id', 'rating', 'timestamp'])
-    num_users = df['user_id'].nunique()
-    num_items = df['item_id'].nunique()
-    num_ratings = len(df)
-    return {"num_users": num_users, "num_movies": num_items, "num_ratings": num_ratings}
+# Route pour récupérer tous les films
+@router.get("/films",response_model=FilmListResponse)
+def get_films(con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    result = con.execute("SELECT * FROM films").fetchall()[0:10] 
 
-@router.get("/user/{user_id}/details", response_model=UserDetailsResponse)
-def user_details(user_id: int):
-    dataset = load_data()
-    df = pd.DataFrame(dataset.raw_ratings, columns=['user_id', 'item_id', 'rating', 'timestamp'])
-    user_data = df[df['user_id'] == user_id]
-    return {"user_id": user_id, "rated_movies": user_data[['item_id', 'rating']].to_dict(orient='records')}
+    # Vérifier si des films ont été trouvés
+    if not result:
+        raise HTTPException(status_code=404, detail="Aucun film trouvé.")
+    
+    films = [
+        Film(
+            film_id=row[0],
+            title=row[1],
+            genres=row[2],
+            description=row[3],
+            release_date=row[4],
+            vote_average=row[5],
+            vote_count=row[6]
+        )
+        for row in result
+    ]
+    return FilmListResponse(films=films)
 
-@router.get("/movie/{movie_id}/details", response_model=MovieDetailsResponse)
-def movie_details(movie_id: int):
-    dataset = load_data()
-    df = pd.DataFrame(dataset.raw_ratings, columns=['user_id', 'item_id', 'rating', 'timestamp'])
-    movie_data = df[df['item_id'] == movie_id]
-    avg_rating = movie_data['rating'].mean()
-    return {"movie_id": movie_id, "avg_rating": avg_rating, "num_ratings": len(movie_data)}
+# Route pour récupérer un film par son ID
+@router.get("/films/{id}",response_model=Film)
+def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    query = "SELECT * FROM films WHERE id = ?"
+    row = con.execute(query, [id]).fetchone()
+    return Film(
+            film_id=row[0],
+            title=row[1],
+            genres=row[2],
+            description=row[3],
+            release_date=row[4],
+            vote_average=row[5],
+            vote_count=row[6]
+        )
 
-@router.get("/movies/top_rated", response_model=TopRatedMoviesResponse)
-def top_rated_movies(num_movies: int = 10):
-    dataset = load_data()
-    df = pd.DataFrame(dataset.raw_ratings, columns=['user_id', 'item_id', 'rating', 'timestamp'])
-    avg_ratings = df.groupby('item_id')['rating'].mean().reset_index()
-    top_movies = avg_ratings.sort_values(by='rating', ascending=False).head(num_movies)
-    return {"top_movies": top_movies.to_dict(orient='records')}
 
-@router.get("/movies/search", response_model=MovieSearchResponse)
-def search_movies(query: str):
-    movies_df = load_movie_metadata()
-    results = movies_df[movies_df['title'].str.contains(query, case=False)]
-    return {"results": results.to_dict(orient='records')}
 
-@router.get("/movies/popular", response_model=PopularMoviesResponse)
-def popular_movies(num_movies: int = 10):
-    dataset = load_data()
-    df = pd.DataFrame(dataset.raw_ratings, columns=['user_id', 'item_id', 'rating', 'timestamp'])
-    popularity = df.groupby('item_id')['rating'].count().reset_index()
-    popular_movies = popularity.sort_values(by='rating', ascending=False).head(num_movies)
-    return {"popular_movies": popular_movies.to_dict(orient='records')}
+
+@router.get("/statistics/distribution_genres/{year}", response_model=DistributionGenresResponse)
+def distribution_genres(year: int, con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    # Query to get all genres for the given year
+    genre_query = """
+    SELECT genres
+    FROM films
+    WHERE STRFTIME('%Y', release_date) = ?
+    """
+    rows = con.execute(genre_query, [str(year)]).fetchall()
+    # Extraire seulement les chaînes non vides
+    genre_strings = [row[0] for row in rows if row[0]]
+    if not genre_strings:
+        raise HTTPException(status_code=404, detail="No genre data found for the given year.")
+
+    # Utiliser la fonction utilitaire
+    genre_counter = count_gender(genre_strings)
+
+    # Sort the genres
+    sorted_genres = sorted(genre_counter.items(), key=lambda x: x[1], reverse=True)
+    result = [GenreDistribution(genre=genre, count=count) for genre, count in sorted_genres]
+
+    return DistributionGenresResponse(year=year, genres=result)
+
+
+@router.get("/statistics/{year}",response_model=ListTopFilm)  # Global
+def get_top10_film(year: int,con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    # Query to get the top 10 films by average vote for the given year and genre
+    top_films_query = """
+    SELECT title, vote_average, release_date
+    FROM films
+    WHERE STRFTIME('%Y', release_date) = ?
+    ORDER BY vote_average DESC
+    LIMIT 10
+    """
+    top_films = con.execute(top_films_query, [str(year)]).fetchall()
+    # If no top films found, return a message
+    if not top_films:
+        raise HTTPException(status_code=404, detail="No films found for the given year.")
+    top_films_response = [TopFilm(title=film[0],vote_average=film[1],release_date=film[2]) for film in top_films]
+    return ListTopFilm(top_films=top_films_response)
+
+@router.get("/statistics/{gender}/{year}", response_model=StatisticsResponse)
+def get_statistics(gender: str, year: int,con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    # Query to get the top 10 films by average vote for the given year and genre
+    top_films_query = """
+    SELECT title, vote_average, release_date
+    FROM films
+    WHERE STRFTIME('%Y', release_date) = ? AND genres LIKE ?
+    ORDER BY vote_average DESC
+    LIMIT 10
+    """
+    top_films = con.execute(top_films_query, [str(year),f'%{gender}%']).fetchall()
+
+    # If no top films found, return a message
+    if not top_films:
+        raise HTTPException(status_code=404, detail="No films found for the given year.")
+
+    # Query genre  count for for the given year
+    genre_stats_query = """
+    SELECT genres
+    FROM films
+    WHERE STRFTIME('%Y', release_date) = ? AND genres LIKE ?
+    """
+    genre_stats = con.execute(genre_stats_query, [str(year), f'%{gender}%']).fetchall()
+    genre_strings = [row[0] for row in genre_stats if row[0]]
+    # Utiliser la fonction utilitaire
+    genre_counter = count_gender(genre_strings)
+    # print([film for film in top_films])
+    # print(genre_counter[f'{gender}'])
+
+    top_films_response = [TopFilm(title=film[0],vote_average=film[1],release_date=film[2]) for film in top_films]
+    genre_stats_response = GenreStatistics(genre=gender, count=genre_counter[f'{gender}'])
+
+    return StatisticsResponse(top_films=top_films_response,genre_statistics=genre_stats_response)

@@ -1,8 +1,21 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import date
+from pydantic import BaseModel, field_validator
 
-class TrainResponse(BaseModel):
-    message: str
+# Pydantic models
+class Film(BaseModel):
+    film_id: int
+    title: str
+    genres: str
+    description: str
+    release_date: date
+    vote_average: float
+    vote_count: int
+
+class FilmListResponse(BaseModel):
+    films: List[Film]
+
 
 class RecommendRequest(BaseModel):
     user_id: int
@@ -10,32 +23,37 @@ class RecommendRequest(BaseModel):
 
 class Recommendation(BaseModel):
     movie_id: int
-    predicted_rating: float
+    title:str
+    rating_predicted: float
+    
+    @field_validator("rating_predicted")
+    @classmethod
+    def round_rating(cls, v):
+        return round(v, 1)
 
 class RecommendResponse(BaseModel):
     user_id: int
     recommendations: List[Recommendation]
+    
 
-class DatasetInfoResponse(BaseModel):
-    num_users: int
-    num_movies: int
-    num_ratings: int
+class TopFilm(BaseModel):
+    title: str
+    vote_average: float
+    release_date: date
+class ListTopFilm(BaseModel):
+    top_films:List[TopFilm]
+class GenreStatistics(BaseModel):
+    genre: str
+    count: int
 
-class UserDetailsResponse(BaseModel):
-    user_id: int
-    rated_movies: List[dict]
+class StatisticsResponse(BaseModel):
+    top_films: List[TopFilm]
+    genre_statistics: GenreStatistics
 
-class MovieDetailsResponse(BaseModel):
-    movie_id: int
-    avg_rating: float
-    num_ratings: int
+class GenreDistribution(BaseModel):
+    genre: str
+    count: int
 
-class TopRatedMoviesResponse(BaseModel):
-    top_movies: List[dict]
-
-class MovieSearchResponse(BaseModel):
-    results: List[dict]
-
-class PopularMoviesResponse(BaseModel):
-    popular_movies: List[dict]
-
+class DistributionGenresResponse(BaseModel):
+    year: int
+    genres: List[GenreDistribution]
