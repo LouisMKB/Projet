@@ -1,15 +1,28 @@
-# Utilise une image de base Python officielle avec Python 3.9
 FROM python:3.11-slim
 
+WORKDIR /app
 
-# Définir le répertoire de travail dans le conteneur
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y curl build-essential gcc python3-dev&& \
+    rm -rf /var/lib/apt/lists/*
 
-# Copier les fichiers de dépendances
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install  -r requirements.txt
 
-# Installer les dépendances
+# Create directory for logs
+RUN mkdir -p /app/logs
 
-# Copier le reste du code de l'application
+# Copy application code
+COPY . ./app
 
-# Exposer le port sur lequel FastAPI fonctionne
+# Set up environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
-# Commande pour démarrer l'application FastAPI
+# Expose port
+EXPOSE 8000
+
+# Run the application with Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

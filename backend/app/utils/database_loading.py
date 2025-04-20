@@ -183,8 +183,8 @@ def add_rating_from_csv():
 
 if __name__ =="__main__":
 
-    #add_film_from_json()
-    # add_rating_from_csv
+    add_film_from_json()
+    add_rating_from_csv()
     
     session.close()
 
