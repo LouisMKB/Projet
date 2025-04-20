@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException,Depends
+from fastapi import APIRouter, HTTPException,Depends,Query
 from collections import Counter
 from backend.app.service.recommendation_service import recommend_movies
 from backend.app.models.schemas import( Film,FilmListResponse,RecommendRequest,Recommendation,
@@ -15,26 +15,18 @@ def get_db_connection():
     finally:
         con.close()
         
-@router.post("/recommendation_movies/{user_id}", response_model=RecommendResponse)
-def get_recommendations(requete:RecommendRequest):
-    """
-    Endpoint pour obtenir des recommandations de films pour un utilisateur spécifié
-    - user_id: Identifiant de l'utilisateur
-    - nombre_de_recommandation: Nombre de recommandations à retourner
-    """
-    return recommend_movies(requete.user_id, requete.num_recommendations)
-    
-
 
 # Route pour récupérer tous les films
 @router.get("/films",response_model=FilmListResponse)
-def get_films(con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
-    result = con.execute("SELECT * FROM films").fetchall()[0:10] 
+def get_films(page: int = Query(1, ge=1,le=500),con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    """Affiche 20 films par page"""
+    films_per_page = 20
+    offset = (page - 1) * films_per_page
+    result = con.execute(f"SELECT * FROM films LIMIT {films_per_page} OFFSET {offset}").fetchall()
 
     # Vérifier si des films ont été trouvés
     if not result:
-        raise HTTPException(status_code=404, detail="Aucun film trouvé.")
-    
+        raise HTTPException(status_code=404, detail="Aucun film trouvé pour cette page.")
     films = [
         Film(
             film_id=row[0],
@@ -52,6 +44,9 @@ def get_films(con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
 # Route pour récupérer un film par son ID
 @router.get("/films/{id}",response_model=Film)
 def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    """
+    Renvoie les détails d'un film, lorsqu'on fournit son identifiant
+    """
     query = "SELECT * FROM films WHERE id = ?"
     row = con.execute(query, [id]).fetchone()
     return Film(
@@ -65,11 +60,44 @@ def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_conn
         )
 
 
+@router.post("/recommendation_movies/{user_id}", response_model=RecommendResponse)
+def get_recommendations(requete:RecommendRequest):
+    """
+    Endpoint pour obtenir des recommandations de films pour un utilisateur spécifié
+    - user_id: Identifiant de l'utilisateur
+    - nombre_de_recommandation: Nombre de recommandations à retourner
+    """
+    return recommend_movies(requete.user_id, requete.num_recommendations)
+    
+
+
+@router.get("/statistics/{year}",response_model=ListTopFilm)  # Global
+def get_top10_film(year: int,con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    """ 
+    Query to get the top 10 films by average vote for the given year
+    """
+    top_films_query = """
+    SELECT title, vote_average, release_date
+    FROM films
+    WHERE STRFTIME('%Y', release_date) = ?
+    ORDER BY vote_average DESC
+    LIMIT 10
+    """
+    top_films = con.execute(top_films_query, [str(year)]).fetchall()
+    # If no top films found, return a message
+    if not top_films:
+        raise HTTPException(status_code=404, detail="No films found for the given year.")
+    top_films_response = [TopFilm(title=film[0],vote_average=film[1],release_date=film[2]) for film in top_films]
+    return ListTopFilm(top_films=top_films_response)
+
+
 
 
 @router.get("/statistics/distribution_genres/{year}", response_model=DistributionGenresResponse)
 def distribution_genres(year: int, con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
-    # Query to get all genres for the given year
+    """ 
+    The query gives  the distributions count of genres for the given year
+    """
     genre_query = """
     SELECT genres
     FROM films
@@ -91,26 +119,13 @@ def distribution_genres(year: int, con: duckdb.DuckDBPyConnection = Depends(get_
     return DistributionGenresResponse(year=year, genres=result)
 
 
-@router.get("/statistics/{year}",response_model=ListTopFilm)  # Global
-def get_top10_film(year: int,con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
-    # Query to get the top 10 films by average vote for the given year and genre
-    top_films_query = """
-    SELECT title, vote_average, release_date
-    FROM films
-    WHERE STRFTIME('%Y', release_date) = ?
-    ORDER BY vote_average DESC
-    LIMIT 10
-    """
-    top_films = con.execute(top_films_query, [str(year)]).fetchall()
-    # If no top films found, return a message
-    if not top_films:
-        raise HTTPException(status_code=404, detail="No films found for the given year.")
-    top_films_response = [TopFilm(title=film[0],vote_average=film[1],release_date=film[2]) for film in top_films]
-    return ListTopFilm(top_films=top_films_response)
+
 
 @router.get("/statistics/{gender}/{year}", response_model=StatisticsResponse)
 def get_statistics(gender: str, year: int,con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
-    # Query to get the top 10 films by average vote for the given year and genre
+    """Query to get the top 10 films by average vote for the given year and genre.
+    Gives also the number of film of this genre the year chosen
+    """
     top_films_query = """
     SELECT title, vote_average, release_date
     FROM films
