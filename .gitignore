@@ -7,10 +7,10 @@ wheels/
 *.egg-info
 .vscode
 
+#Variable d'environnement
+.env
 
-
-
-# Virtual environments
+# environnement virtuel
 .venv
 
 # data
