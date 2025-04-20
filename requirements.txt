@@ -13,5 +13,3 @@ sqlalchemy
 duckdb
 duckdb-engine
 uvicorn
-Cython
-wheel
