@@ -7,9 +7,12 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
 from typing import List
+from pathlib import Path
 
 def load_data():
-    with duckdb.connect("data/films_reco.db") as conn:
+    films_path = Path(__file__).resolve().parents[2] /"app"/"utils"/ "data"/"films_reco.db"
+   
+    with duckdb.connect(films_path) as conn:
         ratings_df = conn.execute("SELECT user_id, film_id, rating FROM ratings").df()
         movies_df = conn.execute("SELECT id AS film_id, title FROM films").df()
         ratings_df = ratings_df[ratings_df["film_id"].isin(movies_df["film_id"])]
@@ -17,7 +20,9 @@ def load_data():
     return ratings_df, movies_df, ratings_matrix
 
 
-def train_model(ratings_matrix, n_components=20):
+def train_model(ratings_matrix):
+    n_features = ratings_matrix.shape[1]
+    n_components = min(20, n_features - 1) if n_features > 1 else 1
     svd = TruncatedSVD(n_components=n_components, random_state=42)
     matrice_latente = svd.fit_transform(ratings_matrix)
     U_sig = matrice_latente

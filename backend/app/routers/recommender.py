@@ -4,12 +4,17 @@ from ..service.recommendation_service import recommend_movies
 from ..models.schemas import( Film,FilmListResponse,RecommendRequest,Recommendation,
 RecommendResponse,TopFilm,ListTopFilm,StatisticsResponse,GenreStatistics,DistributionGenresResponse,GenreDistribution)
 import duckdb
+import os
+from pathlib import Path
+import pandas as pd
 from app.utils.count_gender import count_gender
 router = APIRouter()
 
 
 def get_db_connection():
-    con = duckdb.connect("data/films_reco.db")
+    films_path = Path(__file__).resolve().parents[2] /"app"/"utils"/ "data"/"films_reco.db"
+   
+    con = duckdb.connect(films_path)
     try:
         yield con
     finally:

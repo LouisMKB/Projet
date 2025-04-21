@@ -1,19 +1,33 @@
 import streamlit as st
-import requests
-import os
-import pandas as pd
+from app.utils.api import get_all_movies, get_user_recommendations
+from app.utils.charts import (
+    plot_rating_distribution,
+    plot_movies_per_year,
+    plot_top_movies
+)
 
-from pathlib import Path
+st.set_page_config(
+    page_title="Film Recommender Dashboard",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
+st.sidebar.title("🎬 Film Recommender")
+section = st.sidebar.radio("Navigation", [
+    "📊 Statistiques des films",
+    "🎯 Recommandations personnalisées"
+])
 
-backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+st.title("🎥 Tableau de bord de recommandations de films")
 
-def fetch_greeting():
-    try:
-        response = requests.get(f"{backend_url}/")
-        return response.json() if response.status_code == 200 else {"error": "Erreur lors de la récupération."}
-    except Exception as e:
-        return {"error": str(e)}
+if section == "📊 Statistiques des films":
+    # Choix de la page pour charger les films
+    page_num = st.sidebar.number_input(
+        "Page des films à charger", min_value=1, max_value=100, value=1
+    )
+    st.subheader(f"Chargement des films - Page {page_num}")
+    movies = get_all_movies(page=page_num)
+
 
 def fetch_films():
     try:
@@ -66,13 +80,40 @@ if st.button("Obtenir recommandations"):
             st.write(f"Note prédite: {film['rating_predicted']:.2f}/5")
             st.markdown("---")
 
-# Statistiques
+    if not movies:
+        st.error("Impossible de récupérer les films pour cette page.")
+    else:
+        st.subheader("Distribution des notes")
+        plot_rating_distribution(movies)
 
-st.header("📊 Statistiques")
-try:
-    ratings_path = Path(__file__).resolve().parents[2] / "backend" /"app"/"utils"/ "data" / "ratings.csv"
-    stats_df = pd.read_csv(ratings_path)
-    avg_rating = stats_df.groupby("userId")["rating"].mean().sort_values(ascending=False)
-    st.bar_chart(avg_rating)
-except Exception as e:
-    st.error(f"Erreur chargement stats: {e}")
+        st.subheader("Nombre de films par année")
+        plot_movies_per_year(movies)
+
+        st.subheader("Top 10 des films les mieux notés")
+        plot_top_movies(movies, top_n=10)
+
+elif section == "🎯 Recommandations personnalisées":
+    st.subheader("🔍 Rechercher des recommandations")
+
+    with st.form("user_form"):
+        user_id = st.number_input("Entrer l'ID utilisateur", min_value=1, step=1)
+        num_reco = st.slider("Nombre de recommandations", 1, 20, 5)
+        submitted = st.form_submit_button("Obtenir les recommandations")
+
+    if submitted:
+        try:
+            recommendations = get_user_recommendations(user_id, num_reco)
+            if recommendations:
+                st.success(f"Voici {len(recommendations)} recommandations pour l'utilisateur {user_id}:")
+                cols = st.columns(5)
+                for i, film in enumerate(recommendations):
+                    with cols[i % 5]:
+                        # Affiche l'affiche si disponible
+                        poster = film.get('poster_path')
+                        if poster:
+                            st.image(poster, width=120)
+                        st.caption(film.get('title', 'Titre inconnu'))
+            else:
+                st.warning("Aucune recommandation trouvée pour cet utilisateur.")
+        except Exception as e:
+            st.error(f"Erreur lors de la récupération des recommandations : {e}")
