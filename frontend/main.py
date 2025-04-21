@@ -28,58 +28,6 @@ if section == "📊 Statistiques des films":
     st.subheader(f"Chargement des films - Page {page_num}")
     movies = get_all_movies(page=page_num)
 
-
-def fetch_films():
-    try:
-        response = requests.get(f"{backend_url}/films")
-        return response.json().get('films', []) if response.status_code == 200 else {"error": "Erreur films."}
-    except Exception as e:
-        return {"error": str(e)}
-
-def fetch_recommendations(user_id):
-    try:
-        response = requests.post(f"{backend_url}/recommendation_movies/{user_id}")
-        return response.json() if response.status_code == 200 else {"error": "Erreur recommandations."}
-    except Exception as e:
-        return {"error": str(e)}
-
-st.title("🎬 Tableau de bord des films")
-
-# Accueil
-greeting = fetch_greeting()
-if 'error' in greeting:
-    st.error(greeting['error'])
-else:
-    st.success(greeting.get("message", "Bienvenue !"))
-
-# Affichage des films
-st.header("📽️ Liste des films")
-films = fetch_films()
-if isinstance(films, list):
-    for film in films:
-        st.subheader(film['title'])
-        st.write(f"Genres: {film['genres']}")
-        st.write(f"Description: {film['description']}")
-        st.write(f"Sortie: {film['release_date']}")
-        st.write(f"Note moyenne: {film['vote_average']}")
-        st.markdown("---")
-else:
-    st.error("Erreur lors du chargement des films.")
-
-# Recommandations
-st.header("🎯 Recommandations personnalisées")
-user_id = st.text_input("Entrez votre ID utilisateur :", value="1")
-if st.button("Obtenir recommandations"):
-    recos = fetch_recommendations(user_id)
-    if 'error' in recos:
-        st.error(recos['error'])
-    else:
-        for film in recos["recommendations"]:
-            st.subheader(film['title'])
-            st.write(f"film_id:{film['movie_id']}")
-            st.write(f"Note prédite: {film['rating_predicted']:.2f}/5")
-            st.markdown("---")
-
     if not movies:
         st.error("Impossible de récupérer les films pour cette page.")
     else:
