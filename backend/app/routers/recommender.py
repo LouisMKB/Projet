@@ -61,13 +61,13 @@ def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_conn
 
 
 @router.post("/recommendation_movies/{user_id}", response_model=RecommendResponse)
-def get_recommendations(requete:RecommendRequest):
+def get_recommendations(user_id:int,num_recommendations:int=5):
     """
     Endpoint pour obtenir des recommandations de films pour un utilisateur spécifié
     - user_id: Identifiant de l'utilisateur
     - nombre_de_recommandation: Nombre de recommandations à retourner
     """
-    return recommend_movies(requete.user_id, requete.num_recommendations)
+    return recommend_movies(user_id,num_recommendations)
     
 
 

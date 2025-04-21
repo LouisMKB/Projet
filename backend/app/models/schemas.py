@@ -17,23 +17,26 @@ class FilmListResponse(BaseModel):
     films: List[Film]
 
 
+# Définition de la classe pour la requête
 class RecommendRequest(BaseModel):
-    user_id: int
-    num_recommendations: Optional[int] = 5
+    num_recommendations: Optional[int] = 5  # Nombre de recommandations à retourner
 
+# Définition de la classe pour une recommandation individuelle
 class Recommendation(BaseModel):
     movie_id: int
-    title:str
+    title: str
     rating_predicted: float
-    
+
     @field_validator("rating_predicted")
     @classmethod
     def round_rating(cls, v):
         return round(v, 1)
 
+# Définition de la classe pour la réponse
 class RecommendResponse(BaseModel):
     user_id: int
     recommendations: List[Recommendation]
+
     
 
 class TopFilm(BaseModel):

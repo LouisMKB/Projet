@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   backend:
     build:
@@ -27,7 +25,6 @@ services:
     environment:
       - BACKEND_URL=http://backend:8000  # L'URL du backend à utiliser dans Streamlit 
     
-
 
 networks:
   app-network:

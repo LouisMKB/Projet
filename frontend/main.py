@@ -24,7 +24,7 @@ def fetch_films():
 
 def fetch_recommendations(user_id):
     try:
-        response = requests.post(f"{backend_url}/recommendations/{user_id}")
+        response = requests.post(f"{backend_url}/recommendation_movies/{user_id}")
         return response.json() if response.status_code == 200 else {"error": "Erreur recommandations."}
     except Exception as e:
         return {"error": str(e)}
@@ -60,9 +60,9 @@ if st.button("Obtenir recommandations"):
     if 'error' in recos:
         st.error(recos['error'])
     else:
-        for film in recos:
+        for film in recos["recommendations"]:
             st.subheader(film['title'])
-            st.write(f"Genres: {film['genres']}")
+            st.write(f"film_id:{film['movie_id']}")
             st.write(f"Note prédite: {film['rating_predicted']:.2f}/5")
             st.markdown("---")
 
