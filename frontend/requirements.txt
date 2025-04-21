@@ -1,6 +1,7 @@
 streamlit
-duckdb
 requests
 pandas
 matplotlib
+duckdb
+altair
 seaborn

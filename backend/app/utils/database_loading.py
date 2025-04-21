@@ -64,7 +64,7 @@ def add_film_from_json():
         genre_data = json.load(f)
 
     # Créer un dictionnaire {id: nom}
-    genre_map = {genre["id"]: genre["name"] for genre in genre_data["genres"]}
+    genre_map = {g["id"]: g["name"] for g in genre_data}
 
     # Liste des films à insérer
     films_to_insert = []
@@ -187,4 +187,3 @@ if __name__ =="__main__":
     add_rating_from_csv()
     
     session.close()
-

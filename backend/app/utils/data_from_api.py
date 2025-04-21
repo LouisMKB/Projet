@@ -1,68 +1,66 @@
 import requests
 import json
-import os
 import time
+import logging
 from dotenv import load_dotenv
+import os
 
-# Charger le fichier .env
+# Charger le .env pour récupérer TMDB_BEARER_TOKEN
 load_dotenv()
+logger = logging.getLogger(__name__)
 
-def load_movie_metadata():
-    api_key = os.getenv("TMDB_API_KEY")
-    if api_key is None:
-        print("Erreur : clé API non trouvée.")
-        return
+TMDB_BEARER_TOKEN = os.getenv("TMDB_BEARER_TOKEN")
+if not TMDB_BEARER_TOKEN:
+    logger.error("❌ TMDB_BEARER_TOKEN non trouvé dans .env")
+    exit(1)
 
+HEADERS = {
+    "Authorization": f"Bearer {TMDB_BEARER_TOKEN}",
+    "Accept": "application/json"
+}
+
+def load_movie_metadata(max_pages: int = 5):
+    """
+    Récupère les films populaires depuis TMDB en utilisant le Bearer Token v4
+    et écrit le résultat dans data/movies_database.json
+    """
     base_url = "https://api.themoviedb.org/3/movie/popular"
-    headers = {"Accept": "application/json"}
-
     all_movies = []
-    page = 1
-    max_pages =1000  # Limite imposée par l'API TMDb
-
-    while page <= max_pages:
-        print(f"Chargement de la page {page}...")
-        url = f"{base_url}?api_key={api_key}&language=en-US&page={page}"
-        response = requests.get(url, headers=headers)
-
-        if response.status_code == 200:
-            data = response.json()
-            movies = data.get("results", [])
-            if not movies:
-                print("Plus de résultats.")
-                break
-            all_movies.extend(movies)
-            page += 1
-            time.sleep(0.2)  # Petite pause pour éviter le rate limit
-        else:
-            print(f" Erreur HTTP ({response.status_code}) sur la page {page}.")
+    for page in range(1, max_pages + 1):
+        logger.info(f"🔄 Chargement de la page {page}...")
+        resp = requests.get(base_url, headers=HEADERS, params={"language": "en-US", "page": page})
+        if resp.status_code != 200:
+            logger.error(f"❌ Erreur HTTP {resp.status_code} sur TMDB page {page}")
             break
-
-    # Enregistrement dans un fichier JSON
+        data = resp.json().get("results", [])
+        if not data:
+            logger.info("⚠️ Plus de résultats disponibles.")
+            break
+        all_movies.extend(data)
+        time.sleep(0.2)
+    # Sauvegarde JSON
+    os.makedirs("data", exist_ok=True)
     with open("data/movies_database.json", "w", encoding="utf-8") as f:
         json.dump(all_movies, f, ensure_ascii=False, indent=4)
-
-    print(f"{len(all_movies)} films enregistrés dans 'movies_database.json'.")
+    logger.info(f"✅ {len(all_movies)} films enregistrés dans 'data/movies_database.json'.")
 
 def load_genres():
-    
-    api_key = os.getenv("TMDB_API_KEY")
-    if api_key is None:
-        print("Erreur : clé API non trouvée.")
+    """
+    Récupère la liste des genres depuis TMDB et l'écrit dans data/movies_genre.json
+    """
+    url = "https://api.themoviedb.org/3/genre/movie/list"
+    logger.info("🔄 Chargement des genres TMDB...")
+    resp = requests.get(url, headers=HEADERS, params={"language": "en-US"})
+    if resp.status_code != 200:
+        logger.error(f"❌ Erreur HTTP {resp.status_code} lors de la récupération des genres")
         return
-
-    base_url= "https://api.themoviedb.org/3/genre/movie/list"
-    url=f"{base_url}?api_key={api_key}&language=en"
-    headers = {"Accept": "application/json"}
-    response=requests.get(url,headers=headers)
-    data=[]
-    data=response.json()
-
-    
+    data = resp.json().get("genres", [])
+    os.makedirs("data", exist_ok=True)
     with open("data/movies_genre.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+    logger.info(f"✅ {len(data)} genres enregistrés dans 'data/movies_genre.json'.")
 
-# Lancer l’import
 if __name__ == "__main__":
-    load_movie_metadata()
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    load_movie_metadata(max_pages=5)
     load_genres()

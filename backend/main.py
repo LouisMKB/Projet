@@ -17,5 +17,5 @@ app.include_router(router, tags=["recommender"])
 
 @app.get("/")
 def read_root_api():
-    return {"message": "Bienvenue sur l'API de recommandation de films !"}
-
+    return {"message": "Bienvenue sur l'API de recommandation de films!"}
+ 
