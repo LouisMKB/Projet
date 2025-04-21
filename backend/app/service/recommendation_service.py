@@ -4,6 +4,8 @@ import duckdb
 from ..models.schemas import RecommendResponse,Recommendation
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import train_test_split
 from typing import List
 
 def load_data():
@@ -67,4 +69,35 @@ def recommend_movies(user_id: int, nombre_de_recommandation: int = 10) -> Recomm
     ratings_df, movies_df, ratings_matrix = load_data()
     pred_df = train_model(ratings_matrix)
     return get_recommendation(user_id, ratings_df, movies_df, pred_df, nombre_de_recommandation)
+
+def evaluate_model(ratings_matrix, n_components=20):
+    """
+    Évalue le modèle SVD en calculant le RMSE et le MAE sur une séparation train/test.
+
+    :param ratings_matrix: matrice des notations utilisateur-film
+    :param n_components: nombre de dimensions latentes
+    :return: tuple (rmse, mae)
+    """
+    # Split de la matrice en training et test
+    train_matrix, test_matrix = train_test_split(ratings_matrix, test_size=0.2, random_state=42)
+
+    # Fit du modèle SVD
+    model = TruncatedSVD(n_components=n_components, random_state=42)
+    model.fit(train_matrix)
+
+    # Prédiction
+    predicted_matrix = np.dot(model.transform(train_matrix), model.components_)
+
+    # Masquage des zéros (on ne compare que les notes existantes)
+    test_values = test_matrix.values
+    mask = test_values != 0
+
+    true_ratings = test_values[mask]
+    predicted_ratings = predicted_matrix[mask]
+
+    # Calcul des métriques
+    rmse = np.sqrt(mean_squared_error(true_ratings, predicted_ratings))
+    mae = mean_absolute_error(true_ratings, predicted_ratings)
+
+    return rmse, mae
 
