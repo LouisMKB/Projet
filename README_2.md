@@ -48,3 +48,4 @@ Vous pouvez accéder à l'api ensuite une fois les conteneurs crée, et au dashb
 
 L'api est  accesssible au localhost:8000
 Le dashboard est accessible au localhost:8501
+
