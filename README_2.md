@@ -34,7 +34,17 @@ Afin de lancer la collecte de donné:
 
 L'Api pour la partie backend se trouve dans backend/main.py
 
-Pour accéder à l'api et tester les endpoint faire :
+Pour accéder à l'api et tester les endpoint faire  depuis le dossier Projets:
 ` uvicorn backend.main:app --port 8000 `
 
 Ensuite une fois le serveur fastapi lancé rajouter /docs dans l'url  aprés   127.0.0.1:8000  pour tester les endpoints
+
+
+Pour lancer les service en mode productions ,vous pouvez lancer  avec docker-compose les services grâce à
+
+`docker-compose up`
+
+Vous pouvez accéder à l'api ensuite une fois les conteneurs crée, et au dashboard
+
+L'api est  accesssible au localhost:8000
+Le dashboard est accessible au localhost:8501
