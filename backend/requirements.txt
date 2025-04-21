@@ -1,0 +1,11 @@
+pandas
+numpy
+scikit-learn
+loguru
+requests
+python-dotenv
+fastapi
+sqlalchemy
+duckdb
+duckdb-engine
+uvicorn

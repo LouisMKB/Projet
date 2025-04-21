@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException,Depends,Query
 from collections import Counter
-from backend.app.service.recommendation_service import recommend_movies
-from backend.app.models.schemas import( Film,FilmListResponse,RecommendRequest,Recommendation,
+from ..service.recommendation_service import recommend_movies
+from ..models.schemas import( Film,FilmListResponse,RecommendRequest,Recommendation,
 RecommendResponse,TopFilm,ListTopFilm,StatisticsResponse,GenreStatistics,DistributionGenresResponse,GenreDistribution)
 import duckdb
-from backend.app.utils.count_gender import count_gender
+from app.utils.count_gender import count_gender
 router = APIRouter()
 
 

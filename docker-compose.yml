@@ -1,6 +1,16 @@
 version: "3.9"
 
 services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data  # pour accéder au même fichier DuckDB
+    networks:
+      - app-network
+  
   frontend:
     build:
       context: ./frontend
@@ -13,22 +23,6 @@ services:
     networks:
       - app-network
 
-  backend:
-    build:
-      context: ./backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./data:/app/data  # pour accéder au même fichier DuckDB
-    networks:
-      - app-network
-
-  duckdb:
-    image: alpine  # juste un conteneur vide pour représenter la base via volume
-    volumes:
-      - ./data:/data
-    networks:
-      - app-network
 
 networks:
   app-network:

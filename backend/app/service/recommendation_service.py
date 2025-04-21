@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import duckdb
-from backend.app.models.schemas import RecommendResponse,Recommendation
+from ..models.schemas import RecommendResponse,Recommendation
 from sklearn.decomposition import TruncatedSVD
 from sklearn.preprocessing import MinMaxScaler
 from typing import List

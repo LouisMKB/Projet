@@ -4,25 +4,27 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && \
-    apt-get install -y curl build-essential gcc python3-dev&& \
+    apt-get install -y curl build-essential gcc python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install dependencies
+# Copier uniquement requirements.txt depuis backend
 COPY requirements.txt .
-RUN pip install  -r requirements.txt
 
-# Create directory for logs
+# Installer les dépendances
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Créer un répertoire pour les logs
 RUN mkdir -p /app/logs
 
-# Copy application code
-COPY . ./app
+# Copier tout le code de backend dans le conteneur
+COPY . .
 
-# Set up environment variables
+# Configurer les variables d'environnement
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Expose port
+# Exposer le port
 EXPOSE 8000
 
-# Run the application with Uvicorn
+# Lancer l'application avec Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
