@@ -3,6 +3,9 @@ import requests
 import os
 import pandas as pd
 
+from pathlib import Path
+
+
 backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 def fetch_greeting():
@@ -64,9 +67,11 @@ if st.button("Obtenir recommandations"):
             st.markdown("---")
 
 # Statistiques
+
 st.header("📊 Statistiques")
 try:
-    stats_df = pd.read_csv("../backend/app/utils/data/ratings.csv")
+    ratings_path = Path(__file__).resolve().parents[2] / "backend" /"app"/"utils"/ "data" / "ratings.csv"
+    stats_df = pd.read_csv(ratings_path)
     avg_rating = stats_df.groupby("userId")["rating"].mean().sort_values(ascending=False)
     st.bar_chart(avg_rating)
 except Exception as e:
