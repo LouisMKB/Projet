@@ -11,7 +11,6 @@ from pathlib import Path
 
 def load_data():
     films_path = Path(__file__).resolve().parents[2] /"app"/"utils"/ "data"/"films_reco.db"
-   
     with duckdb.connect(films_path) as conn:
         ratings_df = conn.execute("SELECT user_id, film_id, rating FROM ratings").df()
         movies_df = conn.execute("SELECT id AS film_id, title FROM films").df()
