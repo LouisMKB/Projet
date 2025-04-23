@@ -62,5 +62,5 @@ def load_genres():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-    load_movie_metadata(max_pages=5)
+    load_movie_metadata(max_pages=500)
     load_genres()
