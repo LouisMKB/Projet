@@ -50,12 +50,15 @@ elif section == "🎯 Recommandations personnalisées":
 
     if submitted:
         try:
-            recommendations = get_user_recommendations(user_id, num_reco)
+            reco_user = get_user_recommendations(user_id, num_reco)
+            recommendations=reco_user["recommendations"]
             if recommendations:
                 st.success(f"Voici {len(recommendations)} recommandations pour l'utilisateur {user_id}:")
                 cols = st.columns(5)
                 for i, film in enumerate(recommendations):
                     with cols[i % 5]:
+                        st.write(recommendations['title'])
+                        st.write(recommendations['movie_id'])
                         # Affiche l'affiche si disponible
                         poster = film.get('poster_path')
                         if poster:

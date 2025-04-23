@@ -23,6 +23,7 @@ def get_movie_by_id(movie_id: int):
     return response.json() if response.status_code == 200 else None
 
 def get_user_recommendations(user_id: int, num_recommendations: int = 5):
-    payload = {"user_id": user_id, "num_recommendations": num_recommendations}
-    response = requests.post(f"{BACKEND_URL}/recommendation_movies/{{user_id}}", json=payload)
+    params = {"num_recommendations": num_recommendations}
+    response = requests.post(f"{BACKEND_URL}/recommendation_movies/{user_id}", params=params)
     return response.json() if response.status_code == 200 else []
+
