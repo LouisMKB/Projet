@@ -64,6 +64,12 @@ def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_conn
             vote_count=row[6]
         )
 
+#Compter le nombre de films dans la base de données (utile pour voir les soucis liés à la base)
+@router.get("/films/count")
+def get_total_films(con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    result = con.execute("SELECT COUNT(*) FROM films").fetchone()
+    return {"total_films": result[0]}
+
 
 @router.post("/recommendation_movies/{user_id}", response_model=RecommendResponse)
 def get_recommendations(user_id:int,num_recommendations:int=5):
