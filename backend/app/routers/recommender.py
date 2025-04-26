@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException,Depends,Query
 from collections import Counter
 from ..service.recommendation_service import recommend_movies
 from ..models.schemas import( Film,FilmListResponse,RecommendRequest,Recommendation,
-RecommendResponse,TopFilm,ListTopFilm,StatisticsResponse,GenreStatistics,DistributionGenresResponse,GenreDistribution)
+RecommendResponse,TopFilm,ListTopFilm,StatisticsResponse,GenreStatistics,DistributionGenresResponse,GenreDistribution,FilmCountResponse)
 import duckdb
 import os
 from pathlib import Path
@@ -20,6 +20,12 @@ def get_db_connection():
     finally:
         con.close()
         
+
+#Compter le nombre de films dans la base de données (utile pour voir les soucis liés à la base)
+@router.get("/films/count", response_model=FilmCountResponse)
+def get_total_films(con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    result = con.execute("SELECT COUNT(*) FROM films").fetchone()
+    return FilmCountResponse(total_films=result[0])
 
 # Route pour récupérer tous les films
 @router.get("/films",response_model=FilmListResponse)
@@ -64,11 +70,8 @@ def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_conn
             vote_count=row[6]
         )
 
-#Compter le nombre de films dans la base de données (utile pour voir les soucis liés à la base)
-@router.get("/films/count")
-def get_total_films(con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
-    result = con.execute("SELECT COUNT(*) FROM films").fetchone()
-    return {"total_films": result[0]}
+
+
 
 
 @router.post("/recommendation_movies/{user_id}", response_model=RecommendResponse)

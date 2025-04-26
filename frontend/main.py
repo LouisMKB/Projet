@@ -57,8 +57,8 @@ elif section == "🎯 Recommandations personnalisées":
                 cols = st.columns(5)
                 for i, film in enumerate(recommendations):
                     with cols[i % 5]:
-                        st.write(recommendations['title'])
-                        st.write(recommendations['movie_id'])
+                        st.write(film['title'])
+                        st.write(film['movie_id'])
                         # Affiche l'affiche si disponible
                         poster = film.get('poster_path')
                         if poster:

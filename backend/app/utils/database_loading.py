@@ -9,7 +9,7 @@ from datetime import datetime
 
 # Définition de la base
 # Connexion à DuckDB
-engine = create_engine('duckdb:///data/films_reco.db')
+engine = create_engine('duckdb:///backend/app/utils/data/films_reco.db')
 Base = declarative_base()
 SessionLocal= sessionmaker(bind=engine)
 session= SessionLocal()
@@ -56,11 +56,11 @@ Base.metadata.create_all(engine)
 def add_film_from_json():
     session = SessionLocal()
     # Charger les films depuis un JSON
-    with open("data/movies_database.json", "r", encoding="utf-8") as f:
+    with open("backend/app/utils/data/movies_database.json", "r", encoding="utf-8") as f:
         all_movies = json.load(f)
 
     # Charger les genres
-    with open("data/movies_genre.json", "r", encoding="utf-8") as f:
+    with open("backend/app/utils/data/movies_genre.json", "r", encoding="utf-8") as f:
         genre_data = json.load(f)
 
     # Créer un dictionnaire {id: nom}
@@ -123,7 +123,7 @@ def add_rating_from_csv():
     try:
         # Lire les données depuis le CSV avec pandas
         logger.info("Lecture des données depuis le fichier CSV...")
-        df = pd.read_csv('data/ratings.csv')
+        df = pd.read_csv('backend/app/utils/data/ratings.csv')
 
         # Vérifier le nombre de lignes lues
         logger.info(f"Nombre de lignes lues depuis le fichier CSV : {len(df)}")

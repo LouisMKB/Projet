@@ -60,3 +60,7 @@ class GenreDistribution(BaseModel):
 class DistributionGenresResponse(BaseModel):
     year: int
     genres: List[GenreDistribution]
+
+class FilmCountResponse(BaseModel):
+    total_films: int
+
