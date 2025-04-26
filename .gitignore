@@ -12,6 +12,7 @@ wheels/
 
 # environnement virtuel
 .venv
+monenv
 
 # data
 # Ignore tout le dossier data sauf le fichier jupt.ipynb
