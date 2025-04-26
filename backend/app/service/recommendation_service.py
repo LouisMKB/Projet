@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import train_test_split
 from typing import List
 from pathlib import Path
+from loguru import logger
 
 def load_data():
     """
