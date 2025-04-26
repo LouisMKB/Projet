@@ -27,7 +27,22 @@ _______
 Créer un dossier et ouvrez le  avec vscode, ouvrez un terminal et faite
 `git clone https://github.com/LouisMKB/Projet.git` dans votre terminal
 
-Dans ce projet, vue que nous utilisont un fichier .db en local et que nous n'avons pas stocké les données sur github, vous avez besoin de lancer l'environnement de developpment, pour récupérer les données et créer la base de donnée  avant de pouvoir lancer l'application.
+Dans ce projet, vue que nous utilisons un fichier .db en local et que nous avons stocké les données sur github, vous n'avez pas besoin de lancer l'environnement de développement, pour récupérer les données et créer la base de donnée  avant de pouvoir lancer l'application.
+
+
+__________
+
+### Lancer en mode production le projet
+Pour lancer les services en mode production et profiter de l'application de recommendation de film  Homeflix,vous pouvez lancer docker desktop sur votre machine  et ensuite taper dans votre terminal
+
+`docker compose up --build`
+
+Cela lance la construction de 2 images, une pour le frontend et une pour le backend, cela peut prendre quelques minutes.
+
+Vous pouvez accéder à l'api ensuite une fois les conteneurs crée, et au dashboard
+- L'API est accessible à l'adresse suivante : [http://localhost:8000](http://localhost:8000)
+- Le dashboard est accessible ici : [http://localhost:8501](http://localhost:8501)
+
 
 ### Lancer en mode développement le projet
 #### Configuration de l'environnement de développement.
@@ -86,18 +101,4 @@ Pour accéder à l'api et tester les endpoint faire  depuis la racine du projet
 
 Ensuite une fois le serveur fastapi lancé, aller sur  [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) pour tester les endpoints.
 
-
-
-__________
-
-### Lancer en mode production le projet
-Pour lancer les services en mode production et profiter de l'application de recommendation de film  Homeflix,vous pouvez lancer docker desktop sur votre machine  et ensuite taper dans votre terminal
-
-`docker compose up --build`
-
-Cela lance la construction de 2 images, une pour le frontend et une pour le backend, cela peut prendre quelques minutes.
-
-Vous pouvez accéder à l'api ensuite une fois les conteneurs crée, et au dashboard
-- L'API est accessible à l'adresse suivante : [http://localhost:8000](http://localhost:8000)
-- Le dashboard est accessible ici : [http://localhost:8501](http://localhost:8501)
 
