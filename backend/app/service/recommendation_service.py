@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from typing import List
 from pathlib import Path
 from loguru import logger
+import gzip
+import pickle
 
 # Chemin vers les fichiers de données
 FILMS_PATH = Path(__file__).resolve().parents[2] / "app" / "utils" / "data" / "films_reco.db"
@@ -43,13 +45,17 @@ def get_or_train_model(ratings_matrix, n_components=20, pkl_path=MODEL_PATH):
     try:
         if Path(pkl_path).exists():
             logger.info(f"Chargement du modèle depuis {pkl_path}")
-            return pd.read_pickle(pkl_path)
+            with gzip.open(pkl_path, 'rb') as f:
+                pred_df = pickle.load(f)
+            return pred_df
         svd = TruncatedSVD(n_components=min(n_components, ratings_matrix.shape[1]-1), random_state=42)
         matrice_latente = svd.fit_transform(ratings_matrix)
         predicted_ratings = np.dot(matrice_latente, svd.components_)
         predicted_ratings_scaled = MinMaxScaler((0.5, 5)).fit_transform(predicted_ratings)
-        pred_df = pd.DataFrame(predicted_ratings_scaled, index=ratings_matrix.index, columns=ratings_matrix.columns)
-        pred_df.to_pickle(pkl_path)
+        pred_df = pd.DataFrame(predicted_ratings_scaled, index=ratings_matrix.index, columns=ratings_matrix.columns).astype(np.float32)
+         # Sauvegarder le modèle compressé
+        with gzip.open(pkl_path, 'wb') as f:
+            pickle.dump(pred_df, f)
         logger.info(f"Modèle entraîné et sauvegardé à {pkl_path}")
         return pred_df
     except Exception as e:

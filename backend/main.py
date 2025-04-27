@@ -4,6 +4,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 from app.routers.recommender import router
+
 ##Fastapi
 app = FastAPI()
 
@@ -15,3 +16,4 @@ app.include_router(router, tags=["recommender"])
 def read_root_api():
     return {"message": "Bienvenue sur l'API de recommandation de films!"}
  
+
