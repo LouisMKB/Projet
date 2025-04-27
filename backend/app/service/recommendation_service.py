@@ -25,7 +25,7 @@ def load_data():
     try:
         with duckdb.connect(FILMS_PATH) as conn:
             ratings_df = conn.execute("SELECT user_id, film_id, rating FROM ratings").df()
-            movies_df = conn.execute("SELECT id AS film_id, title FROM films").df()
+            movies_df = conn.execute("SELECT id AS film_id, title, poster_path FROM films").df()
             ratings_df = ratings_df[ratings_df["film_id"].isin(movies_df["film_id"])]
             ratings_matrix = ratings_df.pivot_table(index='user_id', columns='film_id', values='rating').fillna(0)
         logger.info("Données chargées avec succès.")
@@ -84,21 +84,37 @@ def get_recommendation(user_id: int, ratings_df: pd.DataFrame, movies_df: pd.Dat
         if preds.empty:
             logger.info(f"Aucune recommandation disponible pour l'utilisateur {user_id}.")
             return RecommendResponse(user_id=user_id, recommendations=[])
+        
+        recos = []
+        for film_id, score in preds.nlargest(nombre_de_recommandation).items():
+            # À l'intérieur de la boucle, récupère les infos du film de manière sécurisée
+            poster = None
+            title = "Titre inconnu"
 
-        recos = [
-            Recommendation(
-                movie_id=film_id,
-                title=movies_df.loc[movies_df.film_id == film_id, 'title'].iat[0],  # Recherche titre directement
-                rating_predicted=score
+            film_row = movies_df.loc[movies_df.film_id == film_id]
+
+            if not film_row.empty:
+                if 'poster_path' in film_row.columns:
+                    poster = film_row['poster_path'].values[0]
+                if 'title' in film_row.columns:
+                    title = film_row['title'].values[0]
+
+            recos.append(
+                Recommendation(
+                    movie_id=film_id,
+                    title=title,
+                    rating_predicted=score,
+                    poster_path=poster
+                )
             )
-            for film_id, score in preds.nlargest(nombre_de_recommandation).items()  # Utilisation de nlargest pour extraire les top k
-        ]
 
         logger.info(f"{len(recos)} recommandations générées pour l'utilisateur {user_id}.")
         return RecommendResponse(user_id=user_id, recommendations=recos)
+
     except Exception as e:
         logger.error(f"Erreur lors de la génération des recommandations pour l'utilisateur {user_id} : {e}")
         return RecommendResponse(user_id=user_id, recommendations=[])
+
 
 
 def recommend_movies(user_id: int, nombre_de_recommandation: int = 10) -> RecommendResponse:

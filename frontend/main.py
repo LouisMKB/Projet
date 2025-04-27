@@ -62,8 +62,8 @@ elif section == "🎯 Recommandations personnalisées":
                         # Affiche l'affiche si disponible
                         poster = film.get('poster_path')
                         if poster:
-                            st.image(poster, width=120)
-                        st.caption(film.get('title', 'Titre inconnu'))
+                            image_url = f"https://image.tmdb.org/t/p/w300{poster}"
+                            st.image(image_url, width=120)
             else:
                 st.warning("Aucune recommandation trouvée pour cet utilisateur.")
         except Exception as e:

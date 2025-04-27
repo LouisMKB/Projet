@@ -25,6 +25,7 @@ class Film(Base):
     release_date = Column(Date, nullable=True)  # Utilisation du type Date pour la date
     vote_average = Column(Float, nullable=True)  # Note en nombre à virgule flottante
     vote_count = Column(Integer, nullable=True)  # Compte des votes en entier
+    poster_path = Column(String, nullable=True)
     #ratings = relationship("Rating", back_populates="film", cascade="all, delete-orphan")
 
     
@@ -73,7 +74,7 @@ def add_film_from_json():
         
         genre_names = [genre_map.get(gid, str(gid)) for gid in movie.get("genre_ids", [])]
         genre_string = ",".join(genre_names) if genre_names else None
-
+        
         # Convertir la release_date en Date si elle est valide
         release_date_str = movie.get("release_date")
         if release_date_str:
@@ -84,6 +85,8 @@ def add_film_from_json():
                 release_date = None
         else:
             release_date = None
+        
+        poster_path = movie.get("poster_path")
 
         # Vérifier si le film est déjà dans la liste films_to_insert (en vérifiant l'ID)
         if any(film.id == movie.get("id") for film in films_to_insert):
@@ -98,7 +101,8 @@ def add_film_from_json():
             description=movie.get("overview"),
             release_date=release_date,
             vote_average=movie.get("vote_average"),
-            vote_count=movie.get("vote_count")
+            vote_count=movie.get("vote_count"),
+            poster_path=poster_path
         ))
 
     # Insérer dans la base si la liste n'est pas vide
@@ -185,5 +189,4 @@ if __name__ =="__main__":
 
     add_film_from_json()
     add_rating_from_csv()
-    
     session.close()
