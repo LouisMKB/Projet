@@ -27,7 +27,7 @@ _______
 Créer un dossier et ouvrez le  avec vscode, ouvrez un terminal et faite
 `git clone https://github.com/LouisMKB/Projet.git` dans votre terminal
 
-Dans ce projet, vue que nous utilisons un fichier .db en local et que nous avons stocké les données sur github, vous n'avez pas besoin de lancer l'environnement de développement, pour récupérer les données et créer la base de donnée  avant de pouvoir lancer l'application.
+Dans ce projet, vue que nous utilisons un fichier .db en local et que nous avons stocké les données sur github, vous n'avez pas besoin de lancer l'environnement de développement, pour récupérer les données et créer la base de donnée  avant de pouvoir lancer l'application.Mais si vous avez des problèmes de base de donnée n'
 
 
 __________
