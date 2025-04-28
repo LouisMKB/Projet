@@ -87,6 +87,7 @@ def add_film_from_json():
             release_date = None
         
         poster_path = movie.get("poster_path")
+        description = movie.get("overview")
 
         # Vérifier si le film est déjà dans la liste films_to_insert (en vérifiant l'ID)
         if any(film.id == movie.get("id") for film in films_to_insert):
@@ -98,7 +99,7 @@ def add_film_from_json():
             id=movie.get("id"),
             title=movie.get("title"),
             genres=genre_string,
-            description=movie.get("overview"),
+            description=description,
             release_date=release_date,
             vote_average=movie.get("vote_average"),
             vote_count=movie.get("vote_count"),

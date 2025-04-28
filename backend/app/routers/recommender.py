@@ -52,6 +52,31 @@ def get_films(page: int = Query(1, ge=1,le=500),con: duckdb.DuckDBPyConnection =
     ]
     return FilmListResponse(films=films)
 
+# Route pour le film selon son nom
+@router.get("/films/search", response_model=FilmListResponse)
+def search_films_by_title(query: str, con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
+    """
+    Recherche des films par titre.
+    """
+    search_query = f"%{query}%"  # Permet de faire une recherche de type 'like' sur le titre
+    result = con.execute(f"SELECT * FROM films WHERE title LIKE ? LIMIT 10", [search_query]).fetchall()
+
+    films = [
+        Film(
+            film_id=row[0],
+            title=row[1],
+            genres=row[2],
+            description=row[3],
+            release_date=row[4],
+            vote_average=row[5],
+            vote_count=row[6],
+            poster_path = row[7]
+        )
+        for row in result
+    ]
+    return FilmListResponse(films=films)
+
+
 # Route pour récupérer un film par son ID
 @router.get("/films/{id}",response_model=Film)
 def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_connection)):
@@ -67,7 +92,8 @@ def get_film_by_id(id: int, con: duckdb.DuckDBPyConnection = Depends(get_db_conn
             description=row[3],
             release_date=row[4],
             vote_average=row[5],
-            vote_count=row[6]
+            vote_count=row[6],
+            poster_path=row[7]
         )
 
 
