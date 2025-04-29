@@ -97,7 +97,8 @@ elif section == "📊 Statistiques des films":
         st.subheader("Top 10 des films les mieux notés")
         plot_top_movies(all_movies, top_n=10)
     else:
-        st.error("Aucun film disponible pour les pages sélectionnées.")
+        st.error("Aucun film n'a été récupéré pour afficher les statistiques.")
+        visual_log("Échec du chargement des films", "ERROR")
 
 elif section == "🎯 Recommandations personnalisées":
     st.subheader("🔍 Rechercher des recommandations")
