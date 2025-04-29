@@ -18,3 +18,6 @@ monenv
 # Ignore tout le dossier data sauf le fichier jupt.ipynb
 data/*
 !data/jupt.ipynb
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
