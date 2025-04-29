@@ -69,7 +69,8 @@ def get_films(page: int = Query(1, ge=1, le=500), con: duckdb.DuckDBPyConnection
             description=row[3],
             release_date=row[4],
             vote_average=row[5],
-            vote_count=row[6]
+            vote_count=row[6],
+            poster_path=row[7]
         )
         for row in result
     ]

@@ -43,19 +43,19 @@ def get_or_train_model(ratings_matrix, n_components=20, pkl_path=MODEL_PATH):
     :return: DataFrame des notes prédites
     """
     try:
-        if Path(pkl_path).exists():
-            logger.info(f"Chargement du modèle depuis {pkl_path}")
-            with gzip.open(pkl_path, 'rb') as f:
-                pred_df = pickle.load(f)
-            return pred_df
+        # if Path(pkl_path).exists():
+        #     logger.info(f"Chargement du modèle depuis {pkl_path}")
+        #     with gzip.open(pkl_path, 'rb') as f:
+        #         pred_df = pickle.load(f)
+        #     return pred_df
         svd = TruncatedSVD(n_components=min(n_components, ratings_matrix.shape[1]-1), random_state=42)
         matrice_latente = svd.fit_transform(ratings_matrix)
         predicted_ratings = np.dot(matrice_latente, svd.components_)
         predicted_ratings_scaled = MinMaxScaler((0.5, 5)).fit_transform(predicted_ratings)
         pred_df = pd.DataFrame(predicted_ratings_scaled, index=ratings_matrix.index, columns=ratings_matrix.columns).astype(np.float32)
-         # Sauvegarder le modèle compressé
-        with gzip.open(pkl_path, 'wb') as f:
-            pickle.dump(pred_df, f)
+        #  # Sauvegarder le modèle compressé
+        # with gzip.open(pkl_path, 'wb') as f:
+        #     pickle.dump(pred_df, f)
         logger.info(f"Modèle entraîné et sauvegardé à {pkl_path}")
         return pred_df
     except Exception as e:
@@ -95,9 +95,9 @@ def get_recommendation(user_id: int, ratings_df: pd.DataFrame, movies_df: pd.Dat
 
             if not film_row.empty:
                 if 'poster_path' in film_row.columns:
-                    poster = film_row['poster_path'].values[0]
+                    poster = film_row['poster_path'].iat[0]
                 if 'title' in film_row.columns:
-                    title = film_row['title'].values[0]
+                    title = film_row['title'].iat[0]
 
             recos.append(
                 Recommendation(

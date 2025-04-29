@@ -21,8 +21,8 @@ class Film(Base):
     __tablename__ = 'films'
     id = Column(Integer, Sequence('film_id_seq'), primary_key=True)
     title = Column(String, nullable=False)
-    genres = Column(String, nullable=True)
-    description = Column(String, nullable=True)
+    genres = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     release_date = Column(Date, nullable=True)
     vote_average = Column(Float, nullable=True)
     vote_count = Column(Integer, nullable=True)
@@ -76,7 +76,7 @@ def add_film_from_json():
 
     for movie in all_movies:
         genre_names = [genre_map.get(gid, str(gid)) for gid in movie.get("genre_ids", [])]
-        genre_string = ",".join(genre_names) if genre_names else None
+        genre_string = ",".join(genre_names) if genre_names else "" 
 
         release_date_str = movie.get("release_date")
         if release_date_str:
@@ -171,5 +171,5 @@ def add_rating_from_csv():
 
 if __name__ == "__main__":
     add_film_from_json()
-    add_rating_from_csv()
+    # add_rating_from_csv()
     session.close()

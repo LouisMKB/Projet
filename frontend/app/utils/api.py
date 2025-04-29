@@ -7,25 +7,55 @@ from datetime import datetime
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 
-def get_all_movies(page: int = 1):
+# def get_all_movies(page: int = 1):
+#     """
+#     Récupère une liste paginée de films depuis l'API backend.
+
+#     Args:
+#         page (int): Numéro de page pour la pagination (par défaut 1).
+
+#     Returns:
+#         list: Liste des films disponibles pour la page spécifiée.
+#     """
+#     try:
+#         resp = requests.get(f"{BACKEND_URL}/films?page={page}")
+#         resp.raise_for_status()
+#         data = resp.json()
+#         return data.get("films", [])  # On extrait uniquement la liste de films
+#     except Exception as e:
+#         print(f"Erreur lors de get_all_movies: {e}")
+#         return []
+
+def get_all_movies():
     """
-    Récupère une liste paginée de films depuis l'API backend.
-
-    Args:
-        page (int): Numéro de page pour la pagination (par défaut 1).
-
+    Récupère tous les films depuis l'API backend, page par page.
+    
     Returns:
-        list: Liste des films disponibles pour la page spécifiée.
+        list: Liste de tous les films disponibles.
     """
-    try:
-        resp = requests.get(f"{BACKEND_URL}/films?page={page}")
-        resp.raise_for_status()
-        data = resp.json()
-        return data.get("films", [])  # On extrait uniquement la liste de films
-    except Exception as e:
-        print(f"Erreur lors de get_all_movies: {e}")
-        return []
+    all_movies = []
+    page = 1
+    while True:
+        try:
+            # Récupérer les films de la page actuelle
+            resp = requests.get(f"{BACKEND_URL}/films?page={page}")
+            resp.raise_for_status()  # Vérifie si la requête a réussi
+            data = resp.json()
+            movies = data.get("films", [])
+            
+            if not movies:
+                break  # Si aucune donnée n'est renvoyée, on arrête la boucle
 
+            # Ajouter les films récupérés à la liste
+            all_movies.extend(movies)
+            page += 1  # Passer à la page suivante
+            
+        except Exception as e:
+            print(f"Erreur lors de la récupération des films: {e}")
+            st.write(page)
+            break  # Si une erreur survient, arrêter la récupération des films
+    
+    return all_movies
 
 def get_movie_by_id(movie_id: int):
     """
@@ -115,3 +145,18 @@ def afficher_film_complet(film_id: int):
 
     st.write(f"#### Note moyenne : {vote_average:.2f} / 10")
     st.write(f"#### Nombre de votes : {vote_count}")
+
+
+def get_genre_distribution_by_year(year: int):
+    """
+    Récupère la distribution des genres de films pour une année donnée via l'API.
+
+    Args:
+        year (int): Année de sortie des films.
+
+    Returns:
+        dict | None: Un dictionnaire contenant la liste des genres et leur fréquence pour l'année donnée,
+                     ou None si la requête échoue.
+    """
+    response = requests.get(f"{BACKEND_URL}/statistics/distribution_genres/{year}")
+    return response.json() if response.status_code == 200 else None

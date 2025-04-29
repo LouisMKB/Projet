@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import pandas as pd
 
+
 # Appliquer un style Seaborn épuré pour s'intégrer avec Streamlit
 sns.set(style="whitegrid", palette="muted")
 
@@ -29,6 +30,7 @@ def plot_rating_distribution(movies):
     st.pyplot(fig)
 
 
+
 def plot_movies_per_year(movies):
     """
     Affiche un graphique en barres du nombre de films par année de sortie.
@@ -46,10 +48,11 @@ def plot_movies_per_year(movies):
 
     fig, ax = plt.subplots(figsize=(10, 6))
     count_by_year.plot(kind="bar", ax=ax, color="cornflowerblue", edgecolor="black")
-    ax.set_title("Nombre de films par an", fontsize=16, fontweight='bold')
+    ax.set_title("Nombre de films par an de 1903 a 2025", fontsize=16, fontweight='bold')
     ax.set_xlabel("Année", fontsize=14)
     ax.set_ylabel("Nombre de films", fontsize=14)
 
+    
     for p in ax.patches:
         ax.annotate(f'{p.get_height()}',
                     (p.get_x() + p.get_width() / 2., p.get_height()),
@@ -58,7 +61,7 @@ def plot_movies_per_year(movies):
                     ha='center', va='bottom', fontsize=12)
 
     ax.set_facecolor('#f9f9f9')
-    ax.tick_params(axis='both', labelsize=12)
+    ax.tick_params(axis='both', labelsize=8,labelrotation=45,)
     st.pyplot(fig)
 
 
@@ -92,3 +95,24 @@ def plot_top_movies(movies, top_n=10):
     ax.set_facecolor('#f9f9f9')
     ax.tick_params(axis='both', labelsize=12)
     st.pyplot(fig)
+
+
+
+def plot_genre_distribution_chart(data: dict, year: int):
+    """
+    Affiche un histogramme de la distribution des genres pour une année donnée à l'aide de Streamlit et Seaborn.
+    """
+    if not data or not data.get("genres"):
+        st.warning("Aucune donnée de genre disponible pour cette année.")
+        return
+
+    df = pd.DataFrame(data["genres"])
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(x="count", y="genre", data=df, ax=ax, palette="muted")
+    ax.set_title(f"Distribution des genres en {year}")
+    ax.set_xlabel("Nombre de films")
+    ax.set_ylabel("Genre")
+    plt.tight_layout()
+    st.pyplot(fig)
+
+
