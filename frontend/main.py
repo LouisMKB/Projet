@@ -55,6 +55,7 @@ elif section == "📊 Statistiques des films":
         "Page des films à charger", min_value=1, max_value=100, value=1
     )
     st.subheader(f"Chargement des films - Page {page_num}")
+<<<<<<< Updated upstream
     movies = get_all_movies(page=page_num)
 
     if not movies:
@@ -62,6 +63,30 @@ elif section == "📊 Statistiques des films":
         visual_log("Échec du chargement des films", "ERROR")
     else:
         visual_log(f"{len(movies)} films chargés depuis la page {page_num}", "SUCCESS")
+=======
+    
+    # Liste pour stocker tous les films
+    all_movies = []
+      
+    # On essaie de récupérer les films de chaque page depuis 1 jusqu'à la page spécifiée
+    for page in range(1, page_num + 1):
+        movies = get_all_movies(page=page)
+        
+        if not movies:
+            st.warning(f"Page {page} ignorée : aucun film récupéré.")
+            continue
+            
+            # Si la page échoue, on garde la dernière page valide trouvée
+            last_valid_page = page - 1
+            break  # Arrêter la recherche dès qu'on a une erreur
+        
+        visual_log(f"{len(movies)} films chargés depuis la page {page}", "SUCCESS")
+        all_movies.extend(movies)  # Ajout des films récupérés à la liste all_movies
+    
+    
+    # Affichage des statistiques avec tous les films combinés
+    if all_movies:
+>>>>>>> Stashed changes
         st.subheader("Distribution des notes")
         plot_rating_distribution(movies)
 
@@ -72,39 +97,33 @@ elif section == "📊 Statistiques des films":
         plot_top_movies(movies, top_n=10)
 
 elif section == "🎯 Recommandations personnalisées":
-    st.subheader("🔍 Rechercher des recommandations")
-
-    with st.form("user_form"):
-        user_id = st.number_input("Entrer l'ID utilisateur", min_value=1, step=1)
-        num_reco = st.slider("Nombre de recommandations", 1, 20, 5)
-        submitted = st.form_submit_button("Obtenir les recommandations")
-
-    if submitted:
-        try:
-            reco_user = get_user_recommendations(user_id, num_reco)
-            recommendations = reco_user["recommendations"]
-            
-            if recommendations:
-                st.success(f"Voici {len(recommendations)} recommandations pour l'utilisateur {user_id}:")
-                
-                # Créer des colonnes pour l'affichage des films
-                cols = st.columns(5)  # 5 films par ligne
-                for i, film in enumerate(recommendations):
-                    with cols[i % 5]:
-                        st.write(film['title'])
-                        st.write(film['movie_id'])
-                        # Affiche l'affiche si disponible
-                        poster = film.get('poster_path')
-                        if poster:
-                            image_url = f"https://image.tmdb.org/t/p/w300{poster}"
-                            st.image(image_url, width=120)
-
-                # Ajouter un petit écart entre les lignes de recommandations
-                st.write("")  # Ligne vide pour un espacement
-            else:
-                st.warning("Aucune recommandation trouvée pour cet utilisateur.")
-        except Exception as e:
-            st.error(f"Erreur lors de la récupération des recommandations : {e}")
+     st.subheader("🔍 Rechercher des recommandations")
+ 
+     with st.form("user_form"):
+         user_id = st.number_input("Entrer l'ID utilisateur", min_value=1, step=1)
+         num_reco = st.slider("Nombre de recommandations", 1, 20, 5)
+         submitted = st.form_submit_button("Obtenir les recommandations")
+ 
+     if submitted:
+         try:
+             reco_user = get_user_recommendations(user_id, num_reco)
+             recommendations=reco_user["recommendations"]
+             if recommendations:
+                 st.success(f"Voici {len(recommendations)} recommandations pour l'utilisateur {user_id}:")
+                 cols = st.columns(5)
+                 for i, film in enumerate(recommendations):
+                     with cols[i % 5]:
+                         st.write(film['title'])
+                         st.write(film['movie_id'])
+                         # Affiche l'affiche si disponible
+                         poster = film.get('poster_path')
+                         if poster:
+                             image_url = f"https://image.tmdb.org/t/p/w300{poster}"
+                             st.image(image_url, width=120)
+             else:
+                 st.warning("Aucune recommandation trouvée pour cet utilisateur.")
+         except Exception as e:
+             st.error(f"Erreur lors de la récupération des recommandations : {e}")
 
 
 elif section == "📅 Statistiques par genre et année":
