@@ -55,21 +55,46 @@ elif section == "📊 Statistiques des films":
         "Page des films à charger", min_value=1, max_value=100, value=1
     )
     st.subheader(f"Chargement des films - Page {page_num}")
-    movies = get_all_movies(page=page_num)
-
-    if not movies:
-        st.error("Impossible de récupérer les films pour cette page.")
-        visual_log("Échec du chargement des films", "ERROR")
-    else:
-        visual_log(f"{len(movies)} films chargés depuis la page {page_num}", "SUCCESS")
+    
+    # Liste pour stocker tous les films
+    all_movies = []
+    
+    # Variable pour savoir si la dernière page valide a été trouvée
+    last_valid_page = page_num
+    
+    # On essaie de récupérer les films de chaque page depuis 1 jusqu'à la page spécifiée
+    for page in range(1, page_num + 1):
+        movies = get_all_movies(page=page)
+        
+        if not movies:
+            st.warning(f"Impossible de récupérer les films pour la page {page}. Tentative avec la page précédente.")
+            
+            # Si la page échoue, on garde la dernière page valide trouvée
+            last_valid_page = page - 1
+            break  # Arrêter la recherche dès qu'on a une erreur
+        
+        visual_log(f"{len(movies)} films chargés depuis la page {page}", "SUCCESS")
+        all_movies.extend(movies)  # Ajout des films récupérés à la liste all_movies
+    
+    # Si une erreur est survenue, on essaye de récupérer la page valide la plus proche
+    if not all_movies and last_valid_page > 0:
+        st.warning(f"En raison d'erreurs sur les pages, on affiche les statistiques des films de la page {last_valid_page}.")
+        # Récupère les films de la dernière page valide
+        all_movies = get_all_movies(page=last_valid_page)
+        visual_log(f"Films chargés depuis la page {last_valid_page} (page de secours)", "SUCCESS")
+    
+    # Affichage des statistiques avec tous les films combinés
+    if all_movies:
         st.subheader("Distribution des notes")
-        plot_rating_distribution(movies)
+        plot_rating_distribution(all_movies)
 
         st.subheader("Nombre de films par année")
-        plot_movies_per_year(movies)
+        plot_movies_per_year(all_movies)
 
         st.subheader("Top 10 des films les mieux notés")
-        plot_top_movies(movies, top_n=10)
+        plot_top_movies(all_movies, top_n=10)
+    else:
+        st.error("Aucun film disponible pour les pages sélectionnées.")
 
 elif section == "🎯 Recommandations personnalisées":
     st.subheader("🔍 Rechercher des recommandations")
